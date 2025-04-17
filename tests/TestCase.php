@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests;
+namespace Sikessem\Installer\Tests;
 
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
