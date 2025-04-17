@@ -1,49 +1,55 @@
 name: CI
 
+permissions:
+  contents: read
+
 on: ['push', 'pull_request']
 
 jobs:
   ci:
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         php: [8.2, 8.3, 8.4]
-        dependency-version: [prefer-lowest, prefer-stable]
-
-    name: Tests P${{ matrix.php }} - ${{ matrix.os }} - ${{ matrix.dependency-version }}
+        dependencies: [lowest, highest]
+        experimental: [false]
+    name: 👷 CI PHP-${{ matrix.php }} ${{ matrix.dependencies }} on ${{ matrix.os }}
 
     steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
 
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: 📂 Cache dependencies
+        id: composer-cache
+        run: |
+          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-dependencies-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-dependencies-php-${{ matrix.php }}-composer-
 
-    - name: Cache dependencies
-      id: composer-cache
-      run: |
-        echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-    - uses: actions/cache@v3
-      with:
-        path: ${{ steps.composer-cache.outputs.dir }}
-        key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
-        restore-keys: |
-          ${{ runner.os }}-composer-
+      - name: ⚡️ Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, dom, gd, intl, mbstring, openssl, tokenizer, zip
+          ini-values: error_reporting=E_ALL
+          tools: composer:v2, php-cs-fixer, phpunit, vimeo/psalm
+          coverage: pcov
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php }}
-        coverage: none
+      - name: 📦️ Install Composer dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.dependencies }}
+          composer-options: --no-ansi --no-cache --no-interaction --no-scripts --no-progress --prefer-dist
 
-    - name: Install Composer dependencies
-      run: composer update --${{ matrix.dependency-version }} --no-interaction --prefer-dist
+      - name: ✅ Check code lint
+        run: composer check
 
-    - name: Check code lint
-      run: composer check
-
-    - name: Test code units
-      run: composer test
-
-    - name: Integration test
-      run: composer ci
+      - name: 🧪 Test code units
+        run: composer test
