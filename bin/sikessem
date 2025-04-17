@@ -1,0 +1,8 @@
+#!/usr/bin/env php
+<?php
+
+require_once dirname(__DIR__).DIRECTORY_SEPARATOR.'bootstrap.php';
+
+$app = new Sikessem\Installer\Application;
+
+return $app->run();
