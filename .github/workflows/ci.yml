@@ -13,20 +13,20 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest]
-        php: [8.2, 8.3, 8.4]
+        php: [8.4, 8.5]
         dependencies: [lowest, highest]
         experimental: [false]
     name: 👷 CI PHP-${{ matrix.php }} ${{ matrix.dependencies }} on ${{ matrix.os }}
 
     steps:
       - name: 🚚 Get latest code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 📂 Cache dependencies
         id: composer-cache
         run: |
           echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-dependencies-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
@@ -43,7 +43,7 @@ jobs:
           coverage: pcov
 
       - name: 📦️ Install Composer dependencies
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@v4
         with:
           dependency-versions: ${{ matrix.dependencies }}
           composer-options: --no-ansi --no-cache --no-interaction --no-scripts --no-progress --prefer-dist
