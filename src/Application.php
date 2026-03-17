@@ -8,8 +8,12 @@ class Application extends BaseApplication
 {
     use ApplicationTrait;
 
-    public function __construct(string $name = self::DEFAULT_NAME, string $version = self::DEFAULT_VERSION)
+    public function __construct(string $name = self::NAME, string $version = self::VERSION)
     {
         parent::__construct($name, $version);
+
+        $this->addCommand(new Commands\NewCommand);
+        $this->addCommand(new Commands\CreateCommand);
+        $this->addCommand(new Commands\InitCommand);
     }
 }

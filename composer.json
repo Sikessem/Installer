@@ -37,11 +37,12 @@
         "chat": "https://github.com/orgs/sikessem/discussions"
     },
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.4",
+        "laravel/installer": "^5.24",
         "sikessem/console": "^0.2"
     },
     "require-dev": {
-        "sikessem/devtools": "^1.3"
+        "sikessem/devtools": "^1.4"
     },
     "bin": [
         "bin/sikessem",
